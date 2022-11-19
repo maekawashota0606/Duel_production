@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class InputProvider : SingletonMonoBehaviour<InputProvider>, IInput
@@ -10,8 +11,25 @@ public class InputProvider : SingletonMonoBehaviour<InputProvider>, IInput
         Triangle
     }
 
-#region 1P
+    #region デバッグ用マウスドラッグ距離算出関連
 #if UNITY_EDITOR
+    private Vector3 mouseOrigin1P = Vector3.zero;
+    private Vector3 mouseOrigin2P = Vector3.zero;
+
+    private void Update()
+    {
+        if (Input.GetMouseButtonDown(0))
+            mouseOrigin1P = Input.mousePosition;
+        if (Input.GetMouseButtonDown(1))
+            mouseOrigin2P = Input.mousePosition;
+    }
+#endif
+    #endregion
+
+    #region 1P
+#if UNITY_EDITOR
+
+
     public bool GetFireDown1P(FireType type)
     {
         switch (type)
@@ -63,15 +81,24 @@ public class InputProvider : SingletonMonoBehaviour<InputProvider>, IInput
         }
     }
 
+
     public Vector3 GetLeftStick1P()
     {
-        return Vector3.zero;
+        if (Input.GetMouseButton(0))
+            return (mouseOrigin1P - Input.mousePosition).normalized;
+        else
+            return Vector3.zero;
     }
 
     public Vector3 GetRightStick1P()
     {
-        return Vector3.zero;
+        // 一旦左右同じで
+        if (Input.GetMouseButton(0))
+            return (mouseOrigin1P - Input.mousePosition).normalized;
+        else
+            return Vector3.zero;
     }
+
 #else
     public bool GetFireDown1P(FireType type)
     {
@@ -197,12 +224,19 @@ public class InputProvider : SingletonMonoBehaviour<InputProvider>, IInput
 
     public Vector3 GetLeftStick2P()
     {
-        return Vector3.zero;
+        if (Input.GetMouseButton(1))
+            return (mouseOrigin2P - Input.mousePosition).normalized;
+        else
+            return Vector3.zero;
     }
 
     public Vector3 GetRightStick2P()
     {
-        return Vector3.zero;
+        // 一旦左右同じで
+        if (Input.GetMouseButton(1))
+            return (mouseOrigin2P - Input.mousePosition).normalized;
+        else
+            return Vector3.zero;
     }
 #else
     public bool GetFireDown2P(FireType type)
@@ -270,5 +304,5 @@ public class InputProvider : SingletonMonoBehaviour<InputProvider>, IInput
         return new Vector3(x, y);
     }
 #endif
-#endregion
+    #endregion
 }
