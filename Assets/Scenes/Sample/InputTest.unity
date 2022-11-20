@@ -155,7 +155,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   P1: 1
   P2: 0
-  inputType: 4
+  inputType: 3
 --- !u!4 &193143954
 Transform:
   m_ObjectHideFlags: 0

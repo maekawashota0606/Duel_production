@@ -4,15 +4,15 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    private Spiner _spiner = null;
+
+    public void MyInit(Spiner spiner)
     {
-        
+        _spiner = spiner;
     }
 
-    // Update is called once per frame
-    void Update()
+    public void MyUpdate(float delta)
     {
-        
+        // InputProvider‚ğ’‡‰î‚µA“ü—Í‚ğ‚Æ‚é
     }
 }
