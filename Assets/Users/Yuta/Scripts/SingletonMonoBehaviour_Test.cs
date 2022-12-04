@@ -1,18 +1,37 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SingletonMonoBehaviour_Test : MonoBehaviour
+public class SingletonMonoBehaviour_Test<T> : MonoBehaviour where T : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    private static T instance;
+
+    public static T Instance
     {
-        
+        get
+        {
+            if (!instance)
+            {
+                Type t = typeof(T);
+                instance = (T)FindObjectOfType(t);
+                if (!instance)
+                {
+                    Debug.LogError(t + " is nothing.");
+                }
+            }
+            return instance;
+        }
     }
 
-    // Update is called once per frame
-    void Update()
+    protected virtual void Awake()
     {
-        
+        if (this != Instance)
+        {
+            Destroy(this);
+            return;
+        }
+
+        DontDestroyOnLoad(this.gameObject);
     }
 }
