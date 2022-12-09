@@ -25,6 +25,7 @@ public class Sceneyobidasi : MonoBehaviour
 
     public void OnClick()
     {
+        Debug.Log("on");
         fadeManager.fadeOutStart(0, 0, 0, 0, "SampleScene");
         Destroy(button);
         Destroy(karitext);
