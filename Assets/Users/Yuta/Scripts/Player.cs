@@ -4,174 +4,103 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    // PS4コントローラーAxisName
-    private const string STICK_H = "Horizontal_Test";
-    private const string STICK_V = "Vertical_Test";
-    private const string BUTTON_BATSU = "Avoidance_Test";
-    private const string BUTTON_MARU = "Attack_Test";
+    private InputProvider _inputProvider = null;
+    private Spiner _spiner = null;
 
     [SerializeField]
-    private Koma useKoma = null;                // 使用するコマ
+    private int _playerNo = 0;                  // プレイヤー番号
+    private Vector3 _direction = Vector3.zero;  // 入力された方向
+    private bool _beforeShoot = true;           // 発射前フラグ
+    private int _possibleAttackCount = 1;       // 攻撃可能回数
+    private int _attackCount = 0;               // 攻撃回数
+    private int _possibleAvoidanceCount = 1;    // 回避可能回数
+    private int _avoidanceCount = 0;            // 回避回数
 
-    private Vector3 direction = Vector3.zero;   // 入力された方向
-    private bool beforeShoot = true;
-    private bool beforeAvoidance = true;
-    private bool beforeAttack = true;
-
-    // Update is called once per frame
-    void Update()
+    public void MyInit(Spiner spiner)
     {
-        if (StatusManager_Test.gameStatus == StatusManager_Test.GameStatus.waiting)
-        {
-            GetDirection();
-            beforeShoot = true;
-        }
-        else if (StatusManager_Test.gameStatus == StatusManager_Test.GameStatus.fighting)
-        {
-            if (beforeShoot)
-            {
-                Shoot();
-            }
-            else if (beforeAvoidance || beforeAttack)
-            {
-                GetDirection();
-                if (beforeAvoidance)
-                {
-                    Avoidance();
-                }
-                if (beforeAttack)
-                {
-                    Attack();
-                }
-            }
-        }
+        _inputProvider = gameObject.AddComponent<InputProvider>();
+        _spiner = spiner;
     }
 
-    // コマ発射
-    private void Shoot()
+    public void MyUpdate(float delta, bool OnCounting)
     {
-        if (direction == Vector3.zero)
+        // InputProviderを仲介し、入力をとる
+        // gameStatusがcountingの時は、方向の入力のみ
+        if (OnCounting)
         {
             GetDirection();
         }
         else
         {
-            useKoma.ChangeDirection(direction);
-
-            beforeShoot = false;
-            beforeAvoidance = true;
-            beforeAttack = true;
+            // gameStatusがfightingになったら、コマを発射
+            if (_beforeShoot)
+            {
+                Shoot();
+            }
+            else
+            {
+                // コマを発射後は攻撃と回避の処理
+                GetDirection();
+                if (_attackCount > 0 && _direction != Vector3.zero)
+                {
+                    Attack();
+                }
+                if (_avoidanceCount > 0 && _direction != Vector3.zero)
+                {
+                    Avoidance();
+                }
+            }
         }
     }
 
-    // コマ回避
-    private void Avoidance()
+    // 入力方向取得
+    private void GetDirection()
     {
-        if (GetAction() == BUTTON_BATSU && direction != Vector3.zero)
+        switch (_playerNo)
         {
-            useKoma.ChangeDirection(direction);
-            beforeAvoidance = false;
+            case 1:
+                _direction = _inputProvider.GetLeftStick1P() * -1;
+                break;
+            case 2:
+                _direction = _inputProvider.GetLeftStick2P() * -1;
+                break;
         }
+        // InputProvideでマウスとコントローラで取得できるベクトルの
+        // 向きが逆になっている
+        // 　マウスはドラッグした方向と逆向き
+        // 　コントローラはスティックを倒した方向
+        // コントローラ使用を想定して、逆向き（-1をかけている）に変更
+        // しているため、マウス操作の場合はドラッグした方向に動く
+    }
+
+    // コマ発射
+    private void Shoot()
+    {
+        _spiner.SetDirection(_direction);
+        _beforeShoot = false;
+        _attackCount = _possibleAttackCount;
+        _avoidanceCount = _possibleAvoidanceCount;
     }
 
     // 攻撃
     private void Attack()
     {
-        if (GetAction() == BUTTON_MARU && direction != Vector3.zero)
+        if ((_playerNo == 1 && _inputProvider.GetFireDown1P(InputProvider.FireType.Circle) ||
+             _playerNo == 2 && _inputProvider.GetFireDown2P(InputProvider.FireType.Circle)))
         {
-            useKoma.AttackStart(direction);
-            beforeAttack = false;
+            _spiner.AttackStart(_direction.normalized);
+            _attackCount--;
         }
     }
 
-    // コマのアクション方向取得
-    private void GetDirection()
+    // 回避
+    private void Avoidance()
     {
-#if UNITY_EDITOR
-        if (gameObject.name == "Player2")
+        if ((_playerNo == 1 && _inputProvider.GetFireDown1P(InputProvider.FireType.Cross) ||
+             _playerNo == 2 && _inputProvider.GetFireDown2P(InputProvider.FireType.Cross)))
         {
-            // マウスドラッグ情報取得
-            direction = InputMouseDrag();
-            return;
+            _spiner.SetDirection(_direction);
+            _avoidanceCount--;
         }
-#endif
-        direction = InputControllerStick();
     }
-
-    // コマのアクション情報取得
-    private string GetAction()
-    {
-#if UNITY_EDITOR
-        if (gameObject.name == "Player2")
-        {
-            return InputKeyboard();
-        }
-#endif
-        return InputControllerButton();
-    }
-
-    // コントローラースティック情報取得
-    private Vector3 InputControllerStick()
-    {
-        //ジョイスティックの左右
-        float h = Input.GetAxis(STICK_H);
-        //ジョイスティックの上下
-        float v = Input.GetAxis(STICK_V);
-
-        if (h != 0f || v != 0f)
-        {
-            return new Vector3(-h, -v, 0f);
-        }
-
-        return Vector3.zero;
-    }
-
-    // コントローラーボタン情報取得
-    private string InputControllerButton()
-    {
-        if (Input.GetButtonDown(BUTTON_BATSU))
-        {
-            return BUTTON_BATSU;
-        }
-        else if (Input.GetButtonDown(BUTTON_MARU))
-        {
-            return BUTTON_MARU;
-        }
-        return null;
-    }
-
-#if UNITY_EDITOR
-    private Vector3 startPos = Vector3.zero;    // マウスドラッグ開始位置
-
-    // マウスドラッグ情報取得
-    private Vector3 InputMouseDrag()
-    {
-        // ドラッグ開始位置を取得
-        if (Input.GetMouseButtonDown(0))
-        {
-            startPos = Input.mousePosition;
-        }
-        else if (Input.GetMouseButton(0) || Input.GetMouseButtonUp(0))
-        {
-            Vector3 endPos = Input.mousePosition;
-            return startPos - endPos;
-        }
-
-        return Vector3.zero;
-    }
-
-    // キーボード入力取得
-    private string InputKeyboard()
-    {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            return BUTTON_BATSU;
-        }
-        if (Input.GetKeyDown(KeyCode.A))
-        {
-            return BUTTON_MARU;
-        }
-        return null;
-    }
-#endif
 }
