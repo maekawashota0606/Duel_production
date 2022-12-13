@@ -2,26 +2,26 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CollisionBetweenSpiner : SingletonMonoBehaviour<CollisionBetweenSpiner>
+//public class CollisionBetweenSpiner : SingletonMonoBehaviour<CollisionBetweenSpiner>
+public class CollisionBetweenSpiner : MonoBehaviour
 {
     [SerializeField]
     private GameObject _spiner1 = null;     // コマ1ゲームオブジェクト
     [SerializeField]
     private GameObject _spiner2 = null;     // コマ2ゲームオブジェクト
-    private float radius1 = 0f;             // コマ1半径
-    private float radius2 = 0f;             // コマ2半径
-    private bool inCollision = false;
-
-
+    private float _radius1 = 0;             // コマ1半径
+    private float _radius2 = 0;             // コマ2半径
+    
     // Start is called before the first frame update
-    void Start()
+    //void Start()
+    public void MyInit()
     {
-        radius1 = _spiner1.transform.localScale.x / 2f;
-        radius2 = _spiner2.transform.localScale.x / 2f;
+        _radius1 = _spiner1.transform.localScale.x / 2;
+        _radius2 = _spiner2.transform.localScale.x / 2;
     }
 
     // Update is called once per frame
-    void Update()
+    public void MyUpdate()
     {
         CheckCollisionBetweenKoma();
     }
@@ -29,17 +29,14 @@ public class CollisionBetweenSpiner : SingletonMonoBehaviour<CollisionBetweenSpi
     // コマ同士の衝突処理
     private void CheckCollisionBetweenKoma()
     {
-        if (IsCollisionCircle(_spiner1.transform.position, _spiner2.transform.position, radius1, radius2) && !inCollision)
+        Vector3 pos1 = _spiner1.transform.position;
+        Vector3 pos2 = _spiner2.transform.position;
+        if (IsCollisionCircle(pos1, pos2, _radius1, _radius2))
         {
             // コマ1反射
-            _spiner1.GetComponent<Spiner>().ReflectSpiner(_spiner2.transform.position - _spiner1.transform.position);
+            _spiner1.GetComponent<Spiner>().ReflectSpiner(pos2 - pos1);
             // コマ2反射
-            _spiner2.GetComponent<Spiner>().ReflectSpiner(_spiner1.transform.position - _spiner2.transform.position);
-            inCollision = true;
-        }
-        else
-        {
-            inCollision = false;
+            _spiner2.GetComponent<Spiner>().ReflectSpiner(pos1 - pos2);
         }
     }
 

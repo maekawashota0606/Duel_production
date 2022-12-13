@@ -6,19 +6,28 @@ public class Spiner : MonoBehaviour
     private float _defaultSpeed = 1;
     [SerializeField]
     private int _power = 0;
+    [SerializeField]
     private float _currentSpeed = 0;
     /// <summary>
     /// コマの進行方向
     /// </summary>
     private Vector3 _direction = Vector3.zero;
 
+    [SerializeField]
+    private float decelerationMoveRatio = 0.05f;    // 移動時減速率
+    [SerializeField]
+    private float decelerationWallRatio = 0.1f;     // 壁衝突時減速率
+    [SerializeField]
+    private float decelerationHitRatio = 0.2f;      // 攻撃被弾時減速率
+    private Attack attackComponent = null;          // 攻撃オブジェクトのコンポーネント
 
     /// <summary>
     /// 何かしらの初期化処理
     /// </summary>
     public void MyInit()
     {
-
+        _currentSpeed = _defaultSpeed;
+        attackComponent = transform.GetChild(0).gameObject.GetComponent<Attack>();
     }
 
     /// <summary>
@@ -62,6 +71,9 @@ public class Spiner : MonoBehaviour
 
         // 折衷案                →  RigidbodyのVelocityだけ操作
         // 速度を直接いじりつつ、反射などは物理エンジンに任せる
+
+        transform.Translate(_direction * _currentSpeed * delta);
+        DecelerationRatio(decelerationMoveRatio, delta);
     }
 
     /// <summary>
@@ -75,25 +87,32 @@ public class Spiner : MonoBehaviour
     /// <summary>
     /// 壁に反射したときの処理
     /// </summary>
-    public void ReflectWall()
+    public void ReflectWall(Vector3 normal)
     {
-
+        // 法線を参照して反射
+        SetDirection(Vector3.Reflect(_direction, normal));
+        // 減速
+        Deceleration(decelerationWallRatio);
     }
 
     /// <summary>
     /// 他のコマに接触したときの処理
     /// </summary>
-    public void ReflectSpiner()
+    public void ReflectSpiner(Vector3 normal)
     {
-        
+        // 法線を参照して反射
+        //SetDirection(Vector3.Reflect(_direction, normal).normalized);
+        // ↑接触したタイミングでくっついて止まってしまう時があるため、
+        // とりあえず反転
+        SetDirection(_direction * -1);
     }
-    
+
     /// <summary>
     /// 割合での減速
     /// </summary>
-    private void DecelerationRatio(float ratio)
+    private void DecelerationRatio(float ratio, float delta)
     {
-
+        _currentSpeed -= _currentSpeed * ratio * delta;
     }
 
     /// <summary>
@@ -104,4 +123,23 @@ public class Spiner : MonoBehaviour
 
     }
     #endregion
+
+    // 攻撃
+    public void Attack(Vector3 dir)
+    {
+        attackComponent.ActiveStart(dir);
+    }
+
+    // 攻撃被弾時
+    public void DecelerationHit()
+    {
+        Deceleration(decelerationHitRatio);
+    }
+
+    // 攻撃相殺時
+    public void DecelerationOffset()
+    {
+        Deceleration(decelerationHitRatio);
+        attackComponent.SetActive(false);
+    }
 }

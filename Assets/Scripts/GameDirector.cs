@@ -13,6 +13,8 @@ public class GameDirector : SingletonMonoBehaviour<GameDirector>
     private Player _player_2 = null;
     private Spiner _spiner_1 = null;
     private Spiner _spiner_2 = null;
+    [SerializeField]
+    private CollisionBetweenSpiner _collisionBetweenSpiner = null;
     //
     private gameState _gameState = gameState.waiting;
     private delegate void OnUpdate(float delta);
@@ -21,6 +23,9 @@ public class GameDirector : SingletonMonoBehaviour<GameDirector>
     /// コマが停止とみなす速度
     /// </summary>
     public const float _minSpeed = 1;
+
+    private float startCount = 3;
+    private float count = 0;
 
     private enum gameState
     {
@@ -37,8 +42,9 @@ public class GameDirector : SingletonMonoBehaviour<GameDirector>
         _player_2.MyInit(_spiner_2);
         _spiner_1.MyInit();
         _spiner_2.MyInit();
+        _collisionBetweenSpiner.MyInit();
     }
-    
+
     private void Update()
     {
         float delta = Time.deltaTime;
@@ -62,6 +68,7 @@ public class GameDirector : SingletonMonoBehaviour<GameDirector>
     private void OnWaiting(float delta)
     {
         // 他のセットアップを待つ
+        count = startCount;
 
         // セットアップが完了したら
         _gameState = gameState.counting;
@@ -71,8 +78,15 @@ public class GameDirector : SingletonMonoBehaviour<GameDirector>
     private void OnCounting(float delta)
     {
         // 3秒?数える
+        count -= delta;
+        if (count > 0)
+        {
+            _player_1.MyUpdate(delta, true);
+            _player_2.MyUpdate(delta, true);
+            return;
+        }
 
-        _gameState = gameState.fighting;
+        //_gameState = gameState.fighting;
 
         // カウントに達したら
         _gameState = gameState.fighting;
@@ -81,14 +95,15 @@ public class GameDirector : SingletonMonoBehaviour<GameDirector>
 
     private void Onfighting(float delta)
     {
-        _player_1.MyUpdate(delta);
-        _player_2.MyUpdate(delta);
+        _player_1.MyUpdate(delta, false);
+        _player_2.MyUpdate(delta, false);
+        _collisionBetweenSpiner.MyUpdate();
         _spiner_1.MyUpdate(delta);
         _spiner_2.MyUpdate(delta);
 
         // 勝敗がついたら
-        _gameState = gameState.ended;
-        _onUpdate = OnEnded;
+        //_gameState = gameState.ended;
+        //_onUpdate = OnEnded;
     }
 
     private void OnEnded(float delta)
