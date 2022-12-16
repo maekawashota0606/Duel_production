@@ -22,7 +22,7 @@ public class GameDirector : SingletonMonoBehaviour<GameDirector>
     /// <summary>
     /// ƒRƒ}‚ª’â~‚Æ‚İ‚È‚·‘¬“x
     /// </summary>
-    public const float _minSpeed = 1;
+    public const float _minSpeed = 8;
 
     private float startCount = 3;
     private float count = 0;
@@ -102,12 +102,26 @@ public class GameDirector : SingletonMonoBehaviour<GameDirector>
         _spiner_2.MyUpdate(delta);
 
         // Ÿ”s‚ª‚Â‚¢‚½‚ç
-        //_gameState = gameState.ended;
-        //_onUpdate = OnEnded;
+        if(_spiner_1.hp <= 0)
+        {
+            Destroy(_spiner_1.gameObject);
+            _gameState = gameState.ended;
+            _onUpdate = OnEnded;
+        }
+
+        if(_spiner_2.hp <= 0)
+        {
+            Destroy(_spiner_2);
+            _gameState = gameState.ended;
+            _onUpdate = OnEnded;
+        }
     }
 
     private void OnEnded(float delta)
     {
-
+        if (InputProvider.Instance.GetFire1P(InputProvider.FireType.Cross) || InputProvider.Instance.GetFire2P(InputProvider.FireType.Cross))
+        {
+            UnityEngine.SceneManagement.SceneManager.LoadScene("Title");
+        }
     }
 }

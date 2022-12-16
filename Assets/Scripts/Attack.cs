@@ -23,7 +23,6 @@ public class Attack : MonoBehaviour
             transform.rotation = Quaternion.Euler(0, 0, 0);
             transform.localPosition = new Vector3(transform.localScale.x / 2, 0, 0);
         }
-
     }
 
     // UŒ‚ŠJn
@@ -49,7 +48,7 @@ public class Attack : MonoBehaviour
         {
             if (collision.gameObject != _spiner)
             {
-                collision.gameObject.GetComponent<Spiner>().DecelerationHit();
+                collision.gameObject.GetComponent<Spiner>().HitAttack();
             }
         }
         //UŒ‚‚Ì‘ŠE

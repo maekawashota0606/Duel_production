@@ -28,8 +28,6 @@ public class InputProvider : SingletonMonoBehaviour<InputProvider>, IInput
 
     #region 1P
 #if UNITY_EDITOR
-
-
     public bool GetFireDown1P(FireType type)
     {
         switch (type)

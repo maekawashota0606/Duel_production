@@ -7,7 +7,11 @@ public class Spiner : MonoBehaviour
     [SerializeField]
     private int _power = 0;
     [SerializeField]
-    private float _currentSpeed = 0;
+    public int hp = 1;
+    [SerializeField]
+    public float _currentSpeed = 0;
+
+    Player _player;
     /// <summary>
     /// コマの進行方向
     /// </summary>
@@ -131,8 +135,9 @@ public class Spiner : MonoBehaviour
     }
 
     // 攻撃被弾時
-    public void DecelerationHit()
+    public void HitAttack(int damage = 3)
     {
+        hp -= damage;
         Deceleration(decelerationHitRatio);
     }
 

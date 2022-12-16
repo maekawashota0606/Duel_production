@@ -10,7 +10,7 @@ public class Player : MonoBehaviour
     [SerializeField]
     private int _playerNo = 0;                  // プレイヤー番号
     private Vector3 _direction = Vector3.zero;  // 入力された方向
-    private bool _beforeShoot = true;           // 発射前フラグ
+    public bool _beforeShoot = true;           // 発射前フラグ
     [SerializeField]
     private int _possibleAttackCount = 1;       // 攻撃可能回数
     private int _attackCount = 0;               // 攻撃回数
@@ -46,6 +46,11 @@ public class Player : MonoBehaviour
             Attack();
             Avoidance();
         }
+        if(_spiner._currentSpeed == 0)
+        {
+            _beforeShoot = true;
+            _spiner._currentSpeed = 10;
+        }
     }
 
     // 入力方向取得
@@ -57,8 +62,8 @@ public class Player : MonoBehaviour
                 _direction = _inputProvider.GetLeftStick1P() * -1;
                 break;
             case 2:
-                //_direction = _inputProvider.GetLeftStick2P() * -1;
-                _direction = _inputProvider.GetRightStick1P() * -1; // 動作テスト用
+                _direction = _inputProvider.GetLeftStick2P() * -1;
+                //_direction = _inputProvider.GetRightStick1P() * -1; // 動作テスト用
                 break;
         }
         // InputProvideでマウスとコントローラで取得できるベクトルの
